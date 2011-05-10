@@ -56,19 +56,19 @@ function scrobble(previousSong, duration, timestamp) {
 	// The track must have been played for atleast half of its duration or 4 min (240s)
 	if ((elapsedTime > (duration / 2000)) || (elapsedTime > 240)) {
 	    var lastfm_timestamp = Math.round(timestamp/1000);
-	    var api_sig = gen_sig("album" + urlEncode(previousSong.AlbumName)
+	    var api_sig = gen_sig("album" + encodeURIComponent(previousSong.AlbumName)
 				  +"api_key" + api_key
-				  +"artist" + urlEncode(previousSong.ArtistName)
+				  +"artist" + encodeURIComponent(previousSong.ArtistName)
 				  +"methodtrack.scrobble"
 				  +"sk" + sk
 				  +"timestamp" + lastfm_timestamp
-				  +"track" + urlEncode(previousSong.SongName));
+				  +"track" + encodeURIComponent(previousSong.SongName));
 	    
 	    var xhr = new XMLHttpRequest();
 	    var params = "method=track.scrobble"
-		+ "&track=" + urlEncode(previousSong.SongName)
-		+ "&artist=" + urlEncode(previousSong.ArtistName)
-		+ "&album=" + urlEncode(previousSong.AlbumName)
+		+ "&track=" + encodeURIComponent(previousSong.SongName)
+		+ "&artist=" + encodeURIComponent(previousSong.ArtistName)
+		+ "&album=" + encodeURIComponent(previousSong.AlbumName)
 		+ "&timestamp=" + lastfm_timestamp
 		+ "&api_key=" + api_key
 		+ "&sk=" + sk
@@ -92,18 +92,18 @@ function scrobble(previousSong, duration, timestamp) {
 }
 
 function nowPlaying(currentSong) {
-    var api_sig = gen_sig("album" + urlEncode(currentSong.AlbumName)
+    var api_sig = gen_sig("album" + encodeURIComponent(currentSong.AlbumName)
 			  +"api_key" + api_key
-			  +"artist" + urlEncode(currentSong.ArtistName)
+			  +"artist" + encodeURIComponent(currentSong.ArtistName)
 			  +"methodtrack.updateNowPlaying"
 			  +"sk" + sk
-			  +"track" + urlEncode(currentSong.SongName));
+			  +"track" + encodeURIComponent(currentSong.SongName));
     
     var xhr = new XMLHttpRequest();
     var params = "method=track.updateNowPlaying"
-	+ "&track=" + urlEncode(currentSong.SongName)
-	+ "&artist=" + urlEncode(currentSong.ArtistName)
-	+ "&album=" + urlEncode(currentSong.AlbumName)
+	+ "&track=" + encodeURIComponent(currentSong.SongName)
+	+ "&artist=" + encodeURIComponent(currentSong.ArtistName)
+	+ "&album=" + encodeURIComponent(currentSong.AlbumName)
 	+ "&api_key=" + api_key
 	+ "&sk=" + sk
 	+ "&api_sig=" + api_sig;
@@ -130,34 +130,6 @@ function addPageAction(tabId, changeInfo, tab) {
 	    }
 	}
     }
-}
-
-function urlEncode(string)
-{
-    string = string.replace(/\r\n/g,"\n");
-    var utftext = "";
-    
-    for (var n = 0; n < string.length; n++) {
-	
-	var c = string.charCodeAt(n);
-	
-	if (c < 128) {
-	    utftext += String.fromCharCode(c);
-	}
-	else if((c > 127) && (c < 2048)) {
-	    utftext += String.fromCharCode((c >> 6) | 192);
-	    utftext += String.fromCharCode((c & 63) | 128);
-	}
-	else {
-	    utftext += String.fromCharCode((c >> 12) | 224);
-	    utftext += String.fromCharCode(((c >> 6) & 63) | 128);
-	    utftext += String.fromCharCode((c & 63) | 128);
-	}
-	
-    }
-    
-    return encodeURIComponent( utftext ).replace( /\%20/g, '+' ).replace( /!/g, '%21' ).replace( /'/g, '%27' ).replace( /\(/g, '%28' ).replace( /\)/g, '%29' ).replace( /\*/g, '%2A' ).replace( /\~/g, '%7E' );
-    
 }
 
 // Listener managing all the messages sent through the extension
