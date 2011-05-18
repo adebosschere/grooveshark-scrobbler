@@ -2,8 +2,8 @@ var gsTabId; // Id of the first tab containing a Grooveshark page
 var previousSong; // The song actually playing
 var playbackStatus; // Additional infos of the previousSong (typically its duration)
 var sk; // Lastfm session key
-var debug = false; // Toggle verbose mode
-var debugUpdates = false; // Toggle ultra verbose mode
+var debug = true; // Toggle verbose mode
+var debugUpdates = true; // Toggle ultra verbose mode
 
 var api_key = "d7eb4630c49322130d0d9c723a404502";
 
@@ -39,6 +39,12 @@ function gen_sig(str) {
 
 // Inject the content script into the specified tab
 function inject_scripts(tabId) {
+    // Workaround to be sure the tab is atleast partially loaded
+    // FIXME: Use tab status instead
+    setTimeout(function() {inject_scripts_bis(tabId)}, 3000);
+}
+
+function inject_scripts_bis(tabId) {
     chrome.tabs.executeScript(tabId, {'file':'jquery-1.6.min.js'});		
     chrome.tabs.executeScript(tabId, {'file':'contentscript.js'});
     chrome.pageAction.setIcon({path: "gss48.png", tabId: tabId});
@@ -167,9 +173,14 @@ chrome.extension.onRequest.addListener(
 	    if (request.status != null) playbackStatus = request.status;
 	    break;
 	case 'gsTabClosing':
-	    gsTabId = null;
+	    // Check if the message is from the active grooveshark tab
+	    if (sender.tab.id == gsTabId) {
+		if (debug) console.log("[BACKGROUND] The active tab (#"+sender.tab.id+") has been closed");
+		gsTabId = null;
+	    }
 	    break;
 	case 'update':
+	    // If there is an active grooveshark tab, inject the scripts into it
 	    if (gsTabId) {
 		sk = localStorage["sessionKey"];
 		inject_scripts(gsTabId);
