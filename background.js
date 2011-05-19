@@ -40,7 +40,7 @@ function gen_sig(str) {
 // Inject the content script into the specified tab
 function inject_scripts(tabId) {
     // Workaround to be sure the tab is atleast partially loaded
-    // FIXME: Use tab status instead
+    // FIXME: Use tab status instead (loading/loaded)
     setTimeout(function() {inject_scripts_bis(tabId)}, 3000);
 }
 
