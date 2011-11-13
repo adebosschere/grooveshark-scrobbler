@@ -2,14 +2,23 @@ var gsTabId; // Id of the first tab containing a Grooveshark page
 var previousSong; // The song actually playing
 var playbackStatus; // Additional infos of the previousSong (typically its duration)
 var sk; // Lastfm session key
-var debug = true; // Toggle verbose mode
-var debugUpdates = true; // Toggle ultra verbose mode
+var debug; // Toggle verbose mode
+var debugUpdates; // Toggle ultra verbose mode
 
 var api_key = "d7eb4630c49322130d0d9c723a404502";
 
 // Initialisation function
 function init() {
     if (debug) console.log("[BACKGROUND] init()");
+
+	// If the debug flag is not set (first time running the extension), it's set to true by default
+	if (!debug) {
+		if (debug) console.log("[BACKGROUND] First time : Setting debug flags to true");
+		localStorage["debug"] = true;
+		localStorage["debugUpdates"] = false;
+	}
+	debug = localStorage["debug"];
+	debugUpdates = localStorage["debugUpdates"];
 
     sk = localStorage["sessionKey"];
 
@@ -22,8 +31,8 @@ function init() {
 
     // Is it the first time we run the extension ?
     if (!sk) {
-	if (debug) console.log("[BACKGROUND] First time : open options tab");
-	chrome.tabs.create({url:"options.html"}); 
+		if (debug) console.log("[BACKGROUND] First time : open options tab");
+		chrome.tabs.create({url:"options.html"}); 
     } 
 }
 
@@ -45,7 +54,7 @@ function inject_scripts(tabId) {
 }
 
 function inject_scripts_bis(tabId) {
-    chrome.tabs.executeScript(tabId, {'file':'jquery-1.6.min.js'});		
+    chrome.tabs.executeScript(tabId, {'file':'jquery-1.6.min.js'});
     chrome.tabs.executeScript(tabId, {'file':'contentscript.js'});
     chrome.pageAction.setIcon({path: "gss48.png", tabId: tabId});
     if (debug) console.log('[BACKGROUND] Scripts injected into tab #' + tabId);
@@ -152,22 +161,22 @@ chrome.extension.onRequest.addListener(
 	case 'statusUpdate':
 	    // We do nothing if it's still the same song playing
 	    if (previousSong && request.currentSong && request.currentSong.SongName == previousSong.SongName && request.currentSong.ArtistName == previousSong.ArtistName && request.currentSong.AlbumName == previousSong.AlbumName) {
-		if (debug && debugUpdates) console.log('[BACKGROUND] Same song playing.');
-		return;
+			if (debug && debugUpdates) console.log('[BACKGROUND] Same song playing.');
+			return;
 	    }
 	    // It's a new song playing
 	    if (request.currentSong && request.currentSong.SongName) {
-		// Scrobble the previous song if there is one
-		if (previousSong) {
-		    scrobble(previousSong, Math.round(playbackStatus.duration), timestamp);
-		    timestamp = new Date().getTime();
-		} else {
-		    // This is a new song and there was no song before
-		    timestamp = new Date().getTime();
-		}
-		// Update the Now Playing with the new song
-		nowPlaying(request.currentSong);
-	    } 
+			// Scrobble the previous song if there is one
+			if (previousSong) {
+				scrobble(previousSong, Math.round(playbackStatus.duration), timestamp);
+				timestamp = new Date().getTime();
+			} else {
+				// This is a new song and there was no song before
+				timestamp = new Date().getTime();
+			}
+			// Update the Now Playing with the new song
+			nowPlaying(request.currentSong);
+		} 
 	    previousSong = request.currentSong;
 	    // Do NOT update if Grooveshark sends a null status
 	    if (request.status != null) playbackStatus = request.status;
@@ -175,15 +184,15 @@ chrome.extension.onRequest.addListener(
 	case 'gsTabClosing':
 	    // Check if the message is from the active grooveshark tab
 	    if (sender.tab.id == gsTabId) {
-		if (debug) console.log("[BACKGROUND] The active tab (#"+sender.tab.id+") has been closed");
-		gsTabId = null;
+			if (debug) console.log("[BACKGROUND] The active tab (#"+sender.tab.id+") has been closed");
+			gsTabId = null;
 	    }
 	    break;
 	case 'update':
 	    // If there is an active grooveshark tab, inject the scripts into it
 	    if (gsTabId) {
-		sk = localStorage["sessionKey"];
-		inject_scripts(gsTabId);
+			sk = localStorage["sessionKey"];
+			inject_scripts(gsTabId);
 	    }
 	    break;
 	}

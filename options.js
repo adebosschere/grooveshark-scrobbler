@@ -2,7 +2,8 @@ var isAllowed = false; // Has the extension been allowed by Lastfm ?
 var token;
 var sk;
 var step1, step2, step3;
-var debug = false;
+var debug;
+var debugUpdates;
 
 var api_key = "d7eb4630c49322130d0d9c723a404502";
 
@@ -10,7 +11,10 @@ function loadOptions() {
     step1 = document.getElementById("step1");
     step2 = document.getElementById("step2");
     step3 = document.getElementById("step3");
-
+	
+	debug = localStorage["debug"];
+	debugUpdates = localStorage["debugUpdates"];
+	
     sk = localStorage["sessionKey"];
     if (!sk) {
 	if (isAllowed) {
