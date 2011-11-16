@@ -138,9 +138,11 @@ function nowPlaying(currentSong) {
 function addPageAction(tabId, changeInfo, tab) {
     if (tab.url.indexOf('http://grooveshark.com/') == 0) {
 		if (debug) console.log('[BACKGROUND] Grooveshark found in tab #' + tabId + ' (active tab: #'+gsTabId+')');
+		// Display the extension logo in the url bar
 		chrome.pageAction.show(tabId);
 		if (gsTabId == -1) {
 			gsTabId = tabId;
+			if (debug) console.log('[BACKGROUND] New active tab: #' + gsTabId);
 			if (sk) {
 				inject_scripts(gsTabId);
 			}
@@ -190,9 +192,9 @@ chrome.extension.onRequest.addListener(
 	    }
 	    break;
 	case 'update':
+		sk = localStorage["sessionKey"];
 	    // If there is an active grooveshark tab, inject the scripts into it
 	    if (gsTabId != -1) {
-			sk = localStorage["sessionKey"];
 			inject_scripts(gsTabId);
 	    }
 	    break;
