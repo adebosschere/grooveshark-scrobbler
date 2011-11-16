@@ -1,4 +1,4 @@
-var gsTabId; // Id of the first tab containing a Grooveshark page
+var gsTabId = -1; // Id of the first tab containing a Grooveshark page
 var previousSong; // The song actually playing
 var playbackStatus; // Additional infos of the previousSong (typically its duration)
 var sk; // Lastfm session key
@@ -24,9 +24,10 @@ function init() {
 
     chrome.tabs.onUpdated.addListener(addPageAction);
     chrome.tabs.onRemoved.addListener(function(tabId, removeInfo) {
-	if (tabId == gsTabId) {
-	    gsTabId == null;
-	}
+		if (tabId == gsTabId) {
+			gsTabId = -1;
+			if (debug) console.log("[BACKGROUND] The active tab has been closed: #"+ tabId);
+		}
     });
 
     // Is it the first time we run the extension ?
@@ -136,14 +137,14 @@ function nowPlaying(currentSong) {
 
 function addPageAction(tabId, changeInfo, tab) {
     if (tab.url.indexOf('http://grooveshark.com/') == 0) {
-	if (debug) console.log('[BACKGROUND] Grooveshark found in tab #' + tabId);
-	chrome.pageAction.show(tabId);
-	if (!gsTabId) {
-	    gsTabId = tabId;
-	    if (sk) {
-		inject_scripts(gsTabId);
-	    }
-	}
+		if (debug) console.log('[BACKGROUND] Grooveshark found in tab #' + tabId + ' (active tab: #'+gsTabId+')');
+		chrome.pageAction.show(tabId);
+		if (gsTabId == -1) {
+			gsTabId = tabId;
+			if (sk) {
+				inject_scripts(gsTabId);
+			}
+		}
     }
 }
 
@@ -185,12 +186,12 @@ chrome.extension.onRequest.addListener(
 	    // Check if the message is from the active grooveshark tab
 	    if (sender.tab.id == gsTabId) {
 			if (debug) console.log("[BACKGROUND] The active tab (#"+sender.tab.id+") has been closed");
-			gsTabId = null;
+			gsTabId = -1;
 	    }
 	    break;
 	case 'update':
 	    // If there is an active grooveshark tab, inject the scripts into it
-	    if (gsTabId) {
+	    if (gsTabId != -1) {
 			sk = localStorage["sessionKey"];
 			inject_scripts(gsTabId);
 	    }
